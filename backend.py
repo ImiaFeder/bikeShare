@@ -16,7 +16,7 @@ def predict():
 
         # Cek apakah data ada dan tidak kosong
         if not data:
-            return jsonify({"error": "No data provided."}), 400
+            return "No data provided.", 400  # Mengirimkan teks jika tidak ada data
 
         # Konversi data ke DataFrame
         # Pastikan data yang diterima berbentuk list (bukan scalar)
@@ -28,11 +28,11 @@ def predict():
         # Validasi input untuk memastikan kolom yang dibutuhkan ada
         required_columns = ["temp", "hum", "windspeed", "season", "weathersit", "yr", "mnth", "holiday", "weekday", "workingday"]
         if not all(col in df.columns for col in required_columns):
-            return jsonify({"error": "Missing required columns in input data."}), 400
+            return "Missing required columns in input data.", 400  # Mengirimkan teks jika kolom hilang
 
         # Pastikan DataFrame tidak kosong
         if df.empty:
-            return jsonify({"error": "Empty input data."}), 400
+            return "Empty input data.", 400  # Mengirimkan teks jika data kosong
 
         # Prediksi menggunakan model SARIMAX (menggunakan exogenous variable yang sesuai)
         # Pastikan Anda mengirimkan data yang sesuai untuk exogenous variable pada model SARIMAX
@@ -50,12 +50,12 @@ def predict():
         # Gabungkan hasil prediksi SARIMAX dan XGBoost
         final_predictions = sarimax_predictions_full + xgb_residual_predictions_full
 
-        # Kirim hasil prediksi sebagai respon JSON
-        return jsonify({"final_predictions": final_predictions.tolist()})
+        # Kirim hasil prediksi sebagai teks biasa
+        return str(final_predictions.tolist()[0])  # Mengirimkan hasil prediksi sebagai teks biasa (angka saja)
 
     except Exception as e:
         # Menangani kesalahan dan mengirimkan pesan error
-        return jsonify({"error": str(e)}), 500
+        return str(e), 500  # Mengirimkan teks error jika terjadi kesalahan
 
 if __name__ == '__main__':
     app.run(debug=True)

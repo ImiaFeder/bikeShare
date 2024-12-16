@@ -112,17 +112,17 @@
         <div id="forecast" class="forecast">
             <div class="forecast-day">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Weather_icon.png" alt="weather icon" class="weather-icon">
-                <span>19°C</span>
+                <span id="day1-temp">19°C</span>
                 <span>Precip: 10%</span>
             </div>
             <div class="forecast-day">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Weather_icon.png" alt="weather icon" class="weather-icon">
-                <span>18°C</span>
+                <span id="day2-temp">18°C</span>
                 <span>Precip: 20%</span>
             </div>
             <div class="forecast-day">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Weather_icon.png" alt="weather icon" class="weather-icon">
-                <span>17°C</span>
+                <span id="day3-temp">17°C</span>
                 <span>Precip: 30%</span>
             </div>
         </div>
@@ -136,27 +136,15 @@
                 headers: { "Content-Type": "application/json" },
                 body: data
             });
-            const result = await response.json();
-            document.getElementById("result").innerText = JSON.stringify(result, null, 2);
+            const result = await response.text();  // Expecting a plain text response now
 
-            // Example forecast data display - update dynamically as needed
-            document.getElementById("forecast").innerHTML = `
-                <div class="forecast-day">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Weather_icon.png" alt="weather icon" class="weather-icon">
-                    <span>${result.final_predictions ? result.final_predictions[0] : 'N/A'}°C</span>
-                    <span>Precip: 10%</span>
-                </div>
-                <div class="forecast-day">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Weather_icon.png" alt="weather icon" class="weather-icon">
-                    <span>${result.final_predictions ? result.final_predictions[1] : 'N/A'}°C</span>
-                    <span>Precip: 20%</span>
-                </div>
-                <div class="forecast-day">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Weather_icon.png" alt="weather icon" class="weather-icon">
-                    <span>${result.final_predictions ? result.final_predictions[2] : 'N/A'}°C</span>
-                    <span>Precip: 30%</span>
-                </div>
-            `;
+            document.getElementById("result").innerText = `Predicted value: ${result}`;
+
+            // Example forecast data display - update dynamically based on the result (if numeric data is returned)
+            let predictions = result.split(',');  // Assuming result is a string of predictions separated by commas
+            document.getElementById("day1-temp").innerText = `${predictions[0]}°C`;
+            document.getElementById("day2-temp").innerText = `${predictions[1]}°C`;
+            document.getElementById("day3-temp").innerText = `${predictions[2]}°C`;
         }
     </script>
 </body>
