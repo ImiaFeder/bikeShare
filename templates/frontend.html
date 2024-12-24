@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bike Demand Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            text-align: center;
+        }
+
+        form {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #2575fc;
+            color: white;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        #result,
+        #csv-result {
+            margin-top: 20px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-sizing: border-box;
+        }
+
+        #csv-section {
+            margin-top: 30px;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+        }
+
+        #csv-section button {
+            width: auto;
+            padding: 10px 20px;
+            font-size: 1rem;
+        }
+    </style>
+    <script>
+        async function submitForm(event) {
+            event.preventDefault();
+
+            const data = {
+                temp: parseFloat(document.getElementById('temp').value),
+                hum: parseFloat(document.getElementById('hum').value),
+                windspeed: parseFloat(document.getElementById('windspeed').value),
+                season: parseInt(document.getElementById('season').value),
+                weathersit: parseInt(document.getElementById('weathersit').value),
+                yr: parseInt(document.getElementById('yr').value),
+                mnth: parseInt(document.getElementById('mnth').value),
+                holiday: parseInt(document.getElementById('holiday').value),
+                weekday: parseInt(document.getElementById('weekday').value),
+                workingday: parseInt(document.getElementById('workingday').value)
+            };
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    document.getElementById('result').innerText = `Predicted Demand: ${result.predicted_value}`;
+                } else {
+                    const error = await response.text();
+                    document.getElementById('result').innerText = `Error: ${error}`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerText = `Error: ${error.message}`;
+            }
+        }
+
+        async function processFinalHour() {
+            try {
+                const response = await fetch('/process-finalhour', {
+                    method: 'GET'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    document.getElementById('csv-result').innerText = `Processed Rows: ${result.rows_processed}, Success: ${result.success}`;
+                } else {
+                    const error = await response.text();
+                    document.getElementById('csv-result').innerText = `Error: ${error}`;
+                }
+            } catch (error) {
+                document.getElementById('csv-result').innerText = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <h1>🚴‍♂️ Bike Demand Prediction 🚴‍♀️</h1>
+    <form onsubmit="submitForm(event)">
+        <label for="temp">🌡️ Temperature:</label>
+        <input type="number" id="temp" name="temp" step="0.01" placeholder="e.g., 22.5" required>
+
+        <label for="hum">💧 Humidity:</label>
+        <input type="number" id="hum" name="hum" step="0.01" placeholder="e.g., 0.75" required>
+
+        <label for="windspeed">💨 Windspeed:</label>
+        <input type="number" id="windspeed" name="windspeed" step="0.01" placeholder="e.g., 12.3" required>
+
+        <label for="season">🌸 Season (1-4):</label>
+        <input type="number" id="season" name="season" min="1" max="4" placeholder="e.g., 2" required>
+
+        <label for="weathersit">☁️ Weather Situation (1-4):</label>
+        <input type="number" id="weathersit" name="weathersit" min="1" max="4" placeholder="e.g., 3" required>
+
+        <label for="yr">📅 Year (0 or 1):</label>
+        <input type="number" id="yr" name="yr" min="0" max="1" placeholder="e.g., 1" required>
+
+        <label for="mnth">📆 Month (1-12):</label>
+        <input type="number" id="mnth" name="mnth" min="1" max="12" placeholder="e.g., 7" required>
+
+        <label for="holiday">🎉 Holiday (0 or 1):</label>
+        <input type="number" id="holiday" name="holiday" min="0" max="1" placeholder="e.g., 0" required>
+
+        <label for="weekday">📅 Weekday (0-6):</label>
+        <input type="number" id="weekday" name="weekday" min="0" max="6" placeholder="e.g., 3" required>
+
+        <label for="workingday">💼 Working Day (0 or 1):</label>
+        <input type="number" id="workingday" name="workingday" min="0" max="1" placeholder="e.g., 1" required>
+
+        <button type="submit">🌟 Predict Demand 🌟</button>
+    </form>
+
+
+</body>
+
+</html>

@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return render_template('index.html')  # Halaman input data
+    return render_template('frontend.html')  # Halaman input data
 
 @app.route('/predict', methods=['POST'])
 def predict():
