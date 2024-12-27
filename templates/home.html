@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home - BikeFlow</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+        color: #333;
+      }
+
+      header {
+        position: relative;
+        background-image: url("/static/images/bicyclebgml.jpg");
+        background-size: cover;
+        background-position: bottom;
+        color: white;
+        text-align: center;
+        padding: 80px 20px;
+      }
+
+      header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.4); /* Overlay */
+        z-index: 1;
+      }
+
+      header h1,
+      header p {
+        position: relative;
+        z-index: 2;
+      }
+
+      header h1 {
+        font-size: 2.8em;
+        margin: 0;
+      }
+
+      header p {
+        font-size: 1.2em;
+        margin-top: 10px;
+      }
+
+      .container,
+      .info-section {
+        max-width: 900px;
+        margin: 40px auto;
+        text-align: center;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 40px auto;
+        text-align: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #f3f4f7, #ffffff);
+        border-radius: 15px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      .prediction-text {
+        font-size: 1.5em;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      .btn-container {
+        display: flex;
+        justify-content: center;
+        gap: 20px; /* Space between buttons */
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 600;
+        padding: 15px 30px;
+        border-radius: 50px;
+        border: none;
+        text-decoration: none;
+        color: white;
+        cursor: pointer;
+        transition: transform 0.3s, box-shadow 0.3s;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn i {
+        margin-right: 10px;
+        font-size: 1.2em;
+      }
+
+      .btn.daily-btn {
+        background: linear-gradient(135deg, #ffc97e, #f83e3e);
+      }
+
+      .btn.hourly-btn {
+        background: linear-gradient(135deg, #7f7eff, #3f3fff);
+      }
+
+      .btn {
+        background-color: #007bff;
+        color: white;
+        font-size: 18px;
+        padding: 15px 30px;
+        margin: 20px 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background-color 0.3s, transform 0.3s;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn i {
+        margin-right: 10px;
+      }
+
+      .btn:hover {
+        background-color: #0056b3;
+        transform: scale(1.05);
+      }
+
+      .btn-container {
+        display: flex;
+        justify-content: center;
+        gap: 20px; /* Memberikan jarak antar tombol */
+        flex-wrap: wrap; /* Agar tombol bisa pindah baris jika terlalu banyak */
+      }
+
+      .info-section {
+        background-color: #f9f9f9;
+        padding: 30px;
+        border: 1px solid #ddd;
+      }
+
+      .info-section h2 {
+        margin-top: 0;
+        font-size: 1.8em;
+        color: #007bff;
+      }
+
+      .info-section p {
+        font-size: 1em;
+        color: #555;
+        margin-bottom: 20px;
+      }
+
+      footer {
+        text-align: center;
+        padding: 20px;
+        background-color: #333;
+        color: white;
+      }
+
+      footer a {
+        color: #007bff;
+        text-decoration: none;
+      }
+
+      footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Welcome to BikeFlow 🚴</h1>
+      <p>Optimize your bike-sharing experience with smart predictions</p>
+    </header>
+
+    <div class="container">
+      <p class="prediction-text">Choose the Type of Prediction</p>
+      <div class="btn-container">
+        <a href="/daily_predictions" class="btn daily-btn">
+          <i class="fas fa-calendar-day"></i> Daily Prediction
+        </a>
+        <a href="/hourly_predictions" class="btn hourly-btn">
+          <i class="fas fa-clock"></i> Hourly Prediction
+        </a>
+      </div>
+    </div>
+    <div class="info-section">
+      <h2>About BikeFlow</h2>
+      <p>
+        BikeFlow leverages advanced analytics to forecast bike-sharing demand,
+        ensuring better availability and smarter urban mobility. Whether you
+        need daily or hourly predictions, we’ve got you covered.
+      </p>
+    </div>
+  </body>
+</html>

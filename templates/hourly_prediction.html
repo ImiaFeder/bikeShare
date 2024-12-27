@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hourly Bike Demand Prediction</title>
+    <style>
+      /* General body styling */
+      body {
+        font-family: "Arial", sans-serif;
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+        color: white;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* Container for the form */
+      .container {
+        width: 100%;
+        max-width: 600px;
+        padding: 30px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        max-height: 80vh; /* Menambahkan batas tinggi untuk container */
+        overflow-y: auto; /* Membolehkan scroll pada konten */
+        display: flex; /* Menambahkan flexbox */
+        flex-direction: column; /* Mengatur agar form elemen berada dalam kolom */
+        align-items: center; /* Membuat form berada di tengah */
+      }
+
+      h1 {
+        font-size: 2rem;
+        margin-bottom: 20px;
+      }
+
+      /* Styling for labels */
+      label {
+        font-size: 1rem;
+        margin-bottom: 5px;
+        display: block;
+        text-align: left;
+      }
+
+      /* Styling untuk input dan select */
+      input[type="number"],
+      select,
+      button {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border-radius: 10px;
+        border: 2px solid #2575fc;
+        background-color: #f0f4f7;
+        font-size: 1rem;
+        outline: none;
+        transition: all 0.3s;
+        box-sizing: border-box; /* Pastikan padding tidak mempengaruhi ukuran total input */
+      }
+
+      /* Styling for button */
+      button {
+        background-color: #2575fc;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.3s;
+      }
+
+      button:hover {
+        background-color: #1a5bcc;
+        transform: translateY(-2px);
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+
+      /* Output styling */
+      .output {
+        margin-top: 30px;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 15px;
+        text-align: center;
+        max-width: 400px;
+        width: 100%;
+        margin: 20px auto;
+        transition: all 0.3s ease;
+      }
+
+      .output h3 {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #fff;
+        margin-bottom: 15px;
+      }
+
+      .output p {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #ffeb3b; /* Bright color for the prediction text */
+        margin: 0;
+        transition: transform 0.5s ease, opacity 0.5s ease;
+      }
+
+      .output p.new-result {
+        opacity: 1;
+        transform: scale(
+          1.2
+        ); /* Slightly enlarges the prediction text for emphasis */
+      }
+
+      /* Focus effect on inputs */
+      input[type="number"]:focus,
+      select:focus {
+        border-color: #1a5bcc;
+        box-shadow: 0 0 5px rgba(26, 91, 204, 0.6);
+      }
+
+      /* Mobile responsive design */
+      @media screen and (max-width: 768px) {
+        .container {
+          padding: 20px;
+          width: 90%;
+        }
+
+        h1 {
+          font-size: 1.5rem;
+        }
+
+        input[type="number"],
+        select,
+        button {
+          padding: 10px;
+          font-size: 1rem;
+        }
+      }
+
+      @media screen and (max-width: 768px) {
+        select,
+        input[type="number"],
+        button {
+          width: calc(100% - 24px); /* Remove padding space */
+        }
+      }
+
+      .back-button {
+        margin-top: 20px;
+        padding: 12px 20px;
+        background-color: #ff5722;
+        color: white;
+        font-weight: bold;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        text-align: center;
+        width: auto;
+        transition: background-color 0.3s;
+      }
+
+      .back-button:hover {
+        background-color: #e64a19;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Hourly Bike Demand Prediction</h1>
+      <form id="prediction-form">
+        <label for="temp">Temperature (Normalized):</label>
+        <input type="number" id="temp" required />
+
+        <label for="hum">Humidity (Normalized):</label>
+        <input type="number" id="hum" required />
+
+        <label for="windspeed">Windspeed (Normalized):</label>
+        <input type="number" id="windspeed" required />
+
+        <label for="hr">Hour of the Day:</label>
+        <select id="hr" name="hr" required>
+          <option value="0">00:00</option>
+          <option value="1">01:00</option>
+          <option value="2">02:00</option>
+          <option value="3">03:00</option>
+          <option value="4">04:00</option>
+          <option value="5">05:00</option>
+          <option value="6">06:00</option>
+          <option value="7">07:00</option>
+          <option value="8">08:00</option>
+          <option value="9">09:00</option>
+          <option value="10">10:00</option>
+          <option value="11">11:00</option>
+          <option value="12">12:00</option>
+          <option value="13">13:00</option>
+          <option value="14">14:00</option>
+          <option value="15">15:00</option>
+          <option value="16">16:00</option>
+          <option value="17">17:00</option>
+          <option value="18">18:00</option>
+          <option value="19">19:00</option>
+          <option value="20">20:00</option>
+          <option value="21">21:00</option>
+          <option value="22">22:00</option>
+          <option value="23">23:00</option>
+        </select>
+
+        <label for="season">Season:</label>
+        <select id="season" name="season" required>
+          <option value="1">Winter</option>
+          <option value="2">Spring</option>
+          <option value="3">Summer</option>
+          <option value="4">Fall</option>
+        </select>
+
+        <label for="weathersit">Weather Situation:</label>
+        <select id="weathersit" name="weathersit" required>
+          <option value="1">Clear, Few clouds, Partly cloudy</option>
+          <option value="2">
+            Mist + Cloudy, Mist + Broken clouds, Mist + Few clouds, Mist
+          </option>
+          <option value="3">
+            Light Snow, Light Rain + Thunderstorm + Scattered clouds, Light Rain
+            + Scattered clouds
+          </option>
+          <option value="4">
+            Heavy Rain + Ice Pallets + Thunderstorm + Mist, Snow + Fog
+          </option>
+        </select>
+
+        <label for="yr">Year:</label>
+        <select id="yr" name="yr" required>
+          <option value="0">2011</option>
+          <option value="1">2012</option>
+        </select>
+
+        <label for="mnth">Month:</label>
+        <select id="mnth" name="mnth" required>
+          <option value="1">January</option>
+          <option value="2">February</option>
+          <option value="3">March</option>
+          <option value="4">April</option>
+          <option value="5">May</option>
+          <option value="6">June</option>
+          <option value="7">July</option>
+          <option value="8">August</option>
+          <option value="9">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+
+        <label for="holiday">Holiday:</label>
+        <select id="holiday" name="holiday" required>
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </select>
+
+        <label for="weekday">Weekday:</label>
+        <select id="weekday" name="weekday" required>
+          <option value="0">Monday</option>
+          <option value="1">Tuesday</option>
+          <option value="2">Wednesday</option>
+          <option value="3">Thursday</option>
+          <option value="4">Friday</option>
+          <option value="5">Saturday</option>
+          <option value="6">Sunday</option>
+        </select>
+
+        <label for="workingday">Working Day (0 or 1):</label>
+        <input
+          type="number"
+          id="workingday"
+          placeholder="Working Day (0 or 1)"
+          readonly
+        />
+
+        <button type="submit">Predict</button>
+      </form>
+
+      <div class="output" id="output">
+        <h3>Prediction Result:</h3>
+        <p id="prediction-result">-</p>
+      </div>
+
+      <a href="/" class="back-button">Back to Home</a>
+    </div>
+
+    <script>
+      const form = document.getElementById("prediction-form");
+      const output = document.getElementById("prediction-result");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        // Ambil data terbaru dari form
+        const data = {
+          temp: parseFloat(document.getElementById("temp").value),
+          hum: parseFloat(document.getElementById("hum").value),
+          windspeed: parseFloat(document.getElementById("windspeed").value),
+          hr: parseInt(document.getElementById("hr").value),
+          season: parseInt(document.getElementById("season").value),
+          weathersit: parseInt(document.getElementById("weathersit").value),
+          yr: parseInt(document.getElementById("yr").value),
+          mnth: parseInt(document.getElementById("mnth").value),
+          holiday: parseInt(document.getElementById("holiday").value),
+          weekday: parseInt(document.getElementById("weekday").value),
+          workingday: parseInt(document.getElementById("workingday").value),
+        };
+
+        try {
+          const response = await fetch("/predict_hour", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data), // Kirim data form terbaru
+          });
+
+          if (response.ok) {
+            const prediction = await response.text();
+            output.textContent = prediction; // Tampilkan hasil prediksi terbaru
+
+            // Tidak mereset form, biarkan form tetap dengan inputan yang baru
+          } else {
+            const errorText = await response.text();
+            output.textContent = `Error: ${errorText}`;
+          }
+        } catch (error) {
+          output.textContent = `Error: ${error.message}`;
+        }
+      });
+
+      const holidayInput = document.getElementById("holiday");
+      const weekdayInput = document.getElementById("weekday");
+      const workingdayInput = document.getElementById("workingday");
+
+      function updateWorkingDay() {
+        const holiday = parseInt(holidayInput.value, 10);
+        const weekday = parseInt(weekdayInput.value, 10);
+
+        // Set workingday: 1 if not weekend and not holiday, otherwise 0
+        if (holiday === 0 && weekday >= 0 && weekday <= 4) {
+          workingdayInput.value = 1; // Weekday and not a holiday
+        } else {
+          workingdayInput.value = 0; // Either holiday or weekend
+        }
+      }
+
+      // Add event listeners to update workingday when holiday or weekday changes
+      holidayInput.addEventListener("change", updateWorkingDay);
+      weekdayInput.addEventListener("change", updateWorkingDay);
+
+      const outputText = document.getElementById("prediction-result");
+
+      // Adding an animation class when the result changes
+      output.classList.add("new-result");
+
+      // Remove the class after the animation to reset for next updates
+      setTimeout(() => {
+        output.classList.remove("new-result");
+      }, 1000);
+    </script>
+  </body>
+</html>
