@@ -1,9 +1,14 @@
 from flask import Flask, request, render_template, jsonify
 import pandas as pd
-from model import best_xgb_model, results, selected_features, day_df
+from modelbaru import best_xgb_model, results, selected_features, day_df
 import numpy as np
 
 app = Flask(__name__)
+
+# Definisikan t_min dan t_max untuk normalisasi temperatur
+T_MIN = -8
+T_MAX = 39
+WINDSPEED_MAX = 67
 
 @app.route('/')
 def home():
@@ -28,7 +33,6 @@ def predict_day():
             return "No data provided.", 400  # Mengirimkan teks jika tidak ada data
 
         # Konversi data ke DataFrame
-        # Pastikan data yang diterima berbentuk list (bukan scalar)
         if isinstance(data, dict):
             data = [data]  # Jika data berbentuk dictionary, ubah menjadi list of dicts
 
@@ -42,6 +46,11 @@ def predict_day():
         # Pastikan DataFrame tidak kosong
         if df.empty:
             return "Empty input data.", 400  # Mengirimkan teks jika data kosong
+
+        # Normalisasi kolom sesuai permintaan
+        df["temp"] = (df["temp"] - T_MIN) / (T_MAX - T_MIN)  # Normalisasi temperatur
+        df["hum"] = df["hum"] / 100  # Normalisasi kelembaban
+        df["windspeed"] = df["windspeed"] / WINDSPEED_MAX  # Normalisasi kecepatan angin
 
         # Prediksi menggunakan model SARIMAX (menggunakan exogenous variable yang sesuai)
         sarimax_predictions_full = results.predict(
@@ -91,6 +100,11 @@ def predict_hour():
         if df.empty:
             return "Empty input data.", 400  # Mengirimkan teks jika data kosong
 
+        # Normalisasi kolom sesuai permintaan
+        df["temp"] = (df["temp"] - T_MIN) / (T_MAX - T_MIN)  # Normalisasi temperatur
+        df["hum"] = df["hum"] / 100  # Normalisasi kelembaban
+        df["windspeed"] = df["windspeed"] / WINDSPEED_MAX  # Normalisasi kecepatan angin
+
         # Prediksi menggunakan model SARIMAX (menggunakan exogenous variable yang sesuai)
         sarimax_predictions_full = results.predict(
             start=df.index[0],  # Mulai prediksi dari data pertama
@@ -117,5 +131,3 @@ def predict_hour():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-    

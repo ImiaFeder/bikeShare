@@ -1,5 +1,4 @@
 
-
 # %% [markdown]
 # # Import
 
@@ -16,7 +15,6 @@ from xgboost import XGBRegressor
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from sklearn.model_selection import GridSearchCV
-
 
 # %% [markdown]
 # # Day
@@ -63,13 +61,11 @@ scaler = StandardScaler()
 day_df[selected_features] = scaler.fit_transform(day_df[selected_features])
 
 # %%
-# Split day data 
+# Split day data into train and test sets
 X_day = day_df[selected_features]
 y_day = day_df['cnt']
-# %% [markdown]
-# ### Visualization
 
-
+X_train_day, X_test_day, y_train_day, y_test_day = train_test_split(X_day, y_day, test_size=0.2, random_state=42)
 
 # %% [markdown]
 # ### Processing
@@ -89,8 +85,8 @@ residuals = day_df['cnt'] - sarimax_predictions
 
 
 # %%
-X_train_residuals = X_day
-y_train_residuals = residuals.loc[X_day.index]
+X_train_residuals = X_train_day
+y_train_residuals = residuals.loc[X_train_day.index]
 
 # %%
 # Hyperparameter tuning for XGBoost
@@ -138,7 +134,6 @@ print(f"Combined Model R2 (Daily): {r2_combined:.2f}")
 
 # %% [markdown]
 # ### Model Result
-
 
 # %% [markdown]
 # # Hour
@@ -196,13 +191,11 @@ scaler = StandardScaler()
 hour_df[selected_features_hour] = scaler.fit_transform(hour_df[selected_features_hour])
 
 # %%
-# Split hour data 
+# Split hour data into train and test sets
 X_hour = hour_df_sampled[selected_features_hour]
 y_hour = hour_df_sampled['cnt']
 
-# %% [markdown]
-# ### Visualization
-
+X_train_hour, X_test_hour, y_train_hour, y_test_hour = train_test_split(X_hour, y_hour, test_size=0.2, random_state=42)
 
 # %% [markdown]
 # ### Processing
@@ -228,24 +221,39 @@ param_grid = {
 # %%
 # Perform Grid Search 
 grid_search = GridSearchCV(estimator=xgb_model, param_grid=param_grid, 
-                           scoring='neg_mean_squared_error', cv=3, verbose=1, n_jobs=-1)
+                           scoring='neg_mean_squared_error', cv=2, verbose=1, n_jobs=-1)
 
-grid_search.fit(X_hour, y_hour)
+grid_search.fit(X_train_hour, y_train_hour)
 xgb_model_hour = grid_search.best_estimator_
 
 # %%
 # Predict using XGBoost (hourly)
-xgb_predictions_hour = xgb_model_hour.predict(X_hour)
+xgb_predictions_hour = xgb_model_hour.predict(X_test_hour)
 
 # %% [markdown]
 # ### Evaluation
 
 # %%
 # Evaluate XGBoost (hourly)
-xgb_mae_hour = mean_absolute_error(y_hour, xgb_predictions_hour)
-xgb_mse_hour = mean_squared_error(y_hour, xgb_predictions_hour)
-xgb_r2_hour = r2_score(y_hour, xgb_predictions_hour)
+xgb_mae_hour = mean_absolute_error(y_test_hour, xgb_predictions_hour)
+xgb_mse_hour = mean_squared_error(y_test_hour, xgb_predictions_hour)
+xgb_r2_hour = r2_score(y_test_hour, xgb_predictions_hour)
 
 print(f"XGBoost MAE (Hourly): {xgb_mae_hour:.2f}")
 print(f"XGBoost MSE (Hourly): {xgb_mse_hour:.2f}")
 print(f"XGBoost R2 (Hourly): {xgb_r2_hour:.2f}")
+
+# %% [markdown]
+# ### Model Result
+
+# %%
+# Convert to DataFrame
+results_df = pd.DataFrame({
+    'Time': y_test_hour.index.strftime('%Y-%m-%d %H:%M'),
+    'Actual': y_test_hour.values,
+    'Predicted': xgb_predictions_hour
+})
+
+results_df.head()
+
+
