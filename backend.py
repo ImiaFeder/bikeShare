@@ -1,6 +1,7 @@
+from datetime import timedelta
 from flask import Flask, request, render_template, jsonify
 import pandas as pd
-from modelbaru import best_xgb_model, results, selected_features, day_df
+from modelbaru import best_xgb_model, results, selected_features, day_df,day_df1
 import numpy as np
 
 app = Flask(__name__)
@@ -9,6 +10,19 @@ app = Flask(__name__)
 T_MIN = -8
 T_MAX = 39
 WINDSPEED_MAX = 67
+
+def get_next_day_year_month(day_df):
+    # Convert 'dteday' to datetime format
+    day_df['dteday'] = pd.to_datetime(day_df['dteday'])
+    
+    # Get the last date in the dataframe (latest entry)
+    last_date = day_df['dteday'].max()
+    
+    # Calculate the next day
+    next_day = last_date + timedelta(days=1)
+    
+    # Return the year and month of the next day
+    return next_day.year, next_day.month
 
 @app.route('/')
 def home():
@@ -36,7 +50,13 @@ def predict_day():
         if isinstance(data, dict):
             data = [data]  # Jika data berbentuk dictionary, ubah menjadi list of dicts
 
+        year, month = get_next_day_year_month(day_df1)
+
         df = pd.DataFrame(data)
+
+        df['yr'] = year-2012
+        df['mnth'] = month
+        
 
         # Validasi input untuk memastikan kolom yang dibutuhkan ada
         required_columns = ["temp", "hum", "windspeed", "season", "weathersit", "yr", "mnth", "holiday", "weekday", "workingday"]
@@ -53,14 +73,18 @@ def predict_day():
         df["windspeed"] = df["windspeed"] / WINDSPEED_MAX  # Normalisasi kecepatan angin
 
         # Prediksi menggunakan model SARIMAX (menggunakan exogenous variable yang sesuai)
-        sarimax_predictions_full = results.predict(
-            start=df.index[0],  # Mulai prediksi dari data pertama
-            end=day_df.index[0],  # Hingga data pertama
-            exog=df[selected_features]  # Variabel eksternal untuk model SARIMAX
-        )
+        # sarimax_predictions_full = results.predict(
+        #     start=df.index[0],  # Mulai prediksi dari data pertama
+        #     end=day_df.index[0],  # Hingga data pertama
+        #     exog=df[selected_features]  # Variabel eksternal untuk model SARIMAX
+        # )
 
+        print(df)
         # Prediksi XGBoost menggunakan residual dari model sebelumnya
         xgb_residual_predictions_full = best_xgb_model.predict(df[selected_features])
+
+        sarimax_predictions_full = results.forecast(1, exog= df[selected_features])
+
 
         # Gabungkan hasil prediksi SARIMAX dan XGBoost
         final_predictions = sarimax_predictions_full + xgb_residual_predictions_full
@@ -106,18 +130,20 @@ def predict_hour():
         df["windspeed"] = df["windspeed"] / WINDSPEED_MAX  # Normalisasi kecepatan angin
 
         # Prediksi menggunakan model SARIMAX (menggunakan exogenous variable yang sesuai)
-        sarimax_predictions_full = results.predict(
-            start=df.index[0],  # Mulai prediksi dari data pertama
-            end=day_df.index[0],  # Hingga data pertama
-            exog=df[selected_features]  # Variabel eksternal untuk model SARIMAX
-        )
+        # sarimax_predictions_full = results.predict(
+        #     start=df.index[0],  # Mulai prediksi dari data pertama
+        #     end=day_df.index[0],  # Hingga data pertama
+        #     exog=df[selected_features]  # Variabel eksternal untuk model SARIMAX
+        # )
+
+        sarimax_predictions_full = results.forecast(1, exog= df[selected_features])
+
 
         # Prediksi XGBoost menggunakan residual dari model sebelumnya
         xgb_residual_predictions_full = best_xgb_model.predict(df[selected_features])
 
         # Gabungkan hasil prediksi SARIMAX dan XGBoost
-        final_predictions = sarimax_predictions_full + xgb_residual_predictions_full
-
+        final_predictions = sarimax_predictions_full 
         # Bulatkan hasil prediksi
         final_predictions_rounded = np.round(final_predictions)
 

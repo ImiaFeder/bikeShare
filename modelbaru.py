@@ -26,6 +26,7 @@ from sklearn.model_selection import GridSearchCV
 # Load daily dataset
 day_url = "https://raw.githubusercontent.com/michaeldavidsinn/csvml/refs/heads/main/day.csv"
 day_df = pd.read_csv(day_url)
+day_df1 = pd.read_csv(day_url)
 
 # %%
 # Show dataset
@@ -56,7 +57,7 @@ day_df.set_index('dteday', inplace=True)
 selected_features = ['temp', 'hum', 'windspeed', 'season', 'weathersit', 'yr', 'mnth', 'holiday', 'weekday', 'workingday']
 
 # %%
-# Scale the features for XGBoost (daily data)
+# # Scale the features for XGBoost (daily data)
 scaler = StandardScaler()
 day_df[selected_features] = scaler.fit_transform(day_df[selected_features])
 
