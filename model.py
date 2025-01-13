@@ -1,13 +1,30 @@
+from datetime import timedelta
 import pandas as pd
 import numpy as np
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV
 from xgboost import XGBRegressor
+day_df1 = pd.read_csv("day.csv")
+
+
+def get_next_day_year_month(day_df):
+    # Convert 'dteday' to datetime format
+    day_df['dteday'] = pd.to_datetime(day_df['dteday'])
+    
+    # Get the last date in the dataframe (latest entry)
+    last_date = day_df['dteday'].max()
+    
+    # Calculate the next day
+    next_day = last_date + timedelta(days=1)
+    
+    # Return the year and month of the next day
+    return next_day.year, next_day.month
 
 def forecast_and_save(exog_df):
     
-
+    day_df1 = pd.read_csv("day.csv")
+    dummy_df = pd.read_csv("day.csv")
     # Load dataset
     day_df = pd.read_csv("day.csv")
     
@@ -15,12 +32,15 @@ def forecast_and_save(exog_df):
     day_df['dteday'] = pd.to_datetime(day_df['dteday'])
     day_df.set_index('dteday', inplace=True)
     
+    dummy_df['dteday'] = pd.to_datetime(dummy_df['dteday'])
+    dummy_df.set_index('dteday', inplace=True)
+    
+    
     selected_features = ['temp', 'hum', 'windspeed', 'season', 'weathersit', 'yr', 'mnth', 'holiday', 'weekday', 'workingday']
     
     # Scale the selected features
     scaler = StandardScaler()
     day_df[selected_features] = scaler.fit_transform(day_df[selected_features])
-    exog_df[selected_features] = scaler.transform(exog_df[selected_features])
     
     # Prepare data for SARIMAX
     X_day = day_df[selected_features]
@@ -59,54 +79,56 @@ def forecast_and_save(exog_df):
     
     # Final prediction (SARIMAX + XGBoost)
     final_prediction = sarimax_prediction + xgb_prediction
-    
     # Create a new row for the prediction
     new_row = exog_df.copy()
-    new_row['cnt'] = final_prediction[0]
+    new_row['cnt'] = round(final_prediction.tolist()[0])
     new_row['instant'] = len(day_df) + 1
     new_row = new_row.reset_index()
-    new_row['dteday'] = new_row['dteday'].dt.strftime('%Y-%m-%d')  # Format date
     
-    # Append the new row to the original DataFrame
+    forecast_date = sarimax_prediction.index[0]
+
+# Assign ke kolom dteday di new_row
+    new_row['dteday'] = forecast_date
+    
     all_columns = ['instant', 'dteday', 'season', 'yr', 'mnth', 'holiday', 'weekday', 'workingday', 
                    'weathersit', 'temp', 'atemp', 'hum', 'windspeed', 'casual', 'registered', 'cnt']
     for col in all_columns:
         if col not in new_row.columns:
-            new_row[col] = np.nan
+            new_row[col] = 0
     new_row = new_row[all_columns]  # Reorder columns
     
-    day_df.reset_index(inplace=True)
-    updated_df = pd.concat([day_df, new_row], ignore_index=True)
+    dummy_df.reset_index(inplace=True)
+    updated_df = pd.concat([dummy_df, new_row], ignore_index=True)
     
     # Save the updated DataFrame to the CSV file
-    updated_df.to_csv("day1.csv", index=False)
+    updated_df.to_csv("day.csv", index=False)
     
     print(f"Predictions saved to day.csv")
     return final_prediction
 
 
-dummy_data = {
-    'dteday': ['2025-01-14'],  # Tanggal prediksi
-    'temp': [0.45],            # Fitur suhu (dummy)
-    'hum': [0.65],             # Fitur kelembapan (dummy)
-    'windspeed': [0.2],        # Fitur kecepatan angin (dummy)
-    'season': [1],             # Musim (dummy)
-    'weathersit': [2],         # Situasi cuaca (dummy)
-    'yr': [1],                 # Tahun (dummy, 0: 2011, 1: 2012)
-    'mnth': [1],               # Bulan (dummy, 1: Januari, dst.)
-    'holiday': [0],            # Hari libur (dummy, 0: bukan libur, 1: libur)
-    'weekday': [3],            # Hari kerja (dummy, 0: Minggu, dst.)
-    'workingday': [1],         # Hari kerja efektif (dummy, 0: tidak, 1: ya)
-}
+# dummy_data = {
+#     'dteday': ['2025-01-14'],  # Tanggal prediksi
+#     'temp': [0.45],            # Fitur suhu (dummy)
+#     'hum': [0.65],             # Fitur kelembapan (dummy)
+#     'windspeed': [0.2],        # Fitur kecepatan angin (dummy)
+#     'season': [1],             # Musim (dummy)
+#     'weathersit': [2],         # Situasi cuaca (dummy)
+#     'yr': [1],                 # Tahun (dummy, 0: 2011, 1: 2012)
+#     'mnth': [1],               # Bulan (dummy, 1: Januari, dst.)
+#     'holiday': [0],            # Hari libur (dummy, 0: bukan libur, 1: libur)
+#     'weekday': [3],            # Hari kerja (dummy, 0: Minggu, dst.)
+#     'workingday': [1],         # Hari kerja efektif (dummy, 0: tidak, 1: ya)
+# }
 
-# Konversi ke DataFrame
-exog_df = pd.DataFrame(dummy_data)
+# # Konversi ke DataFrame
+# exog_df = pd.DataFrame(dummy_data)
 
-# Pastikan 'dteday' dikonversi ke datetime
-exog_df['dteday'] = pd.to_datetime(exog_df['dteday'])
+# # Pastikan 'dteday' dikonversi ke datetime
+# exog_df['dteday'] = pd.to_datetime(exog_df['dteday'])
 
-# Tampilkan DataFrame dummy
-print(exog_df)
+# # Tampilkan DataFrame dummy
+# print(exog_df)
 
-print(forecast_and_save(exog_df))
+# print(forecast_and_save(exog_df))
 

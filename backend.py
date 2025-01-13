@@ -1,8 +1,7 @@
 from datetime import timedelta
 from flask import Flask, request, render_template, jsonify
 import pandas as pd
-from modelbaru import best_xgb_model, results, selected_features, day_df1
-from model import forecast_and_save
+from model import forecast_and_save, day_df1
 import numpy as np
 
 app = Flask(__name__)
@@ -29,9 +28,9 @@ def get_next_day_year_month(day_df):
 def home():
     return render_template('home.html')
 
-@app.route('/hourly_predictions')
+@app.route('/daily_predictions')
 def hourly_prediction():
-    return render_template('hourly_prediction.html') 
+    return render_template('daily_prediction.html') 
 
 @app.route('/predict_day', methods=['POST'])
 def predict_day():
@@ -80,10 +79,11 @@ def predict_day():
         # Prediksi XGBoost menggunakan residual dari model sebelumnya
      
         # Bulatkan hasil prediksi
-        final_predictions_rounded = forecast_and_save(df)
+        final_prediction_rounded = round(forecast_and_save(df))
+
 
         # Kirim hasil prediksi sebagai teks biasa
-        return str(final_predictions_rounded.tolist()[0])  # Mengirimkan hasil prediksi sebagai angka bulat
+        return str(final_prediction_rounded.tolist()[0])  # Mengirimkan hasil prediksi sebagai angka bulat
 
     except Exception as e:
         # Menangani kesalahan dan mengirimkan pesan error
